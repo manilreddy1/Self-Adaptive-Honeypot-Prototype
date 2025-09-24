@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Honeypot Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #0f0f0f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            width: 300px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: red;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: darkred;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: red;
+        }
+
+        .error {
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Secure System Login</h1>
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Username" autofocus>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password" required onpaste="return false;">
+            <span class="toggle-password" onclick="togglePassword()">👁</span>
+        </div>
+        <button onclick="attemptLogin()" id="loginBtn">Login</button>
+        <p id="status"></p>
+        <div class="captcha">
+            <input type="checkbox" id="captchaCheck"> I am not a robot
+        </div>
+    </div>
+    <script>
+        function togglePassword() {
+            let passwordField = document.getElementById("password");
+            passwordField.type = passwordField.type === "password" ? "text" : "password";
+        }
+
+        function attemptLogin() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let captchaChecked = document.getElementById("captchaCheck").checked;
+            let status = document.getElementById("status");
+            let loginBtn = document.getElementById("loginBtn");
+
+            if (!captchaChecked) {
+                status.innerText = "Please verify you are not a robot!";
+                status.classList.add("error");
+                return;
+            }
+
+            status.innerText = "Checking...";
+            loginBtn.disabled = true;
+            setTimeout(() => {
+                fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: username, password: password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    status.innerText = data.message;
+                    loginBtn.disabled = false;
+                    if (data.reset) {
+                        document.body.innerHTML = "<h1>Security System Reset!</h1><p>All configurations have changed.</p>";
+                    }
+                })
+                .catch(() => {
+                    status.innerText = "Login failed. Try again.";
+                    loginBtn.disabled = false;
+                    status.classList.add("error");
+                    setTimeout(() => status.classList.remove("error"), 500);
+                });
+            }, 1500); // Introduce login delay
+        }
+    </script>
+</body>
+</html>
