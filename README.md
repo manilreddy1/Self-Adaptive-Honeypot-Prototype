@@ -24,5 +24,5 @@ This project combines **frontend interaction** with a **Python backend** to demo
 ## ⚙️ Setup & Run
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR-USERNAME/Self-Adaptive-Honeypot-Prototype.git
+git clone https://github.com/manilreddy1/Self-Adaptive-Honeypot-Prototype.git
 cd Self-Adaptive-Honeypot-Prototype
